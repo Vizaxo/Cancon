@@ -13,10 +13,11 @@ checkAndEval s e = if checkType (Compose (stackToExpr s) e)
                                Nothing => Left "Runtime error."
                      else Left "Type checking failed."
 
-compose : List Expr -> Expr
-compose [] = id
-compose (x :: xs) = (Compose x (compose xs))
+export
+composeProgram : List Expr -> Expr
+composeProgram [] = id
+composeProgram (x :: xs) = (Compose x (composeProgram xs))
 
 export
 run : List Expr -> Either String Stack
-run xs = checkAndEval Empty (compose xs)
+run xs = checkAndEval Empty (composeProgram xs)

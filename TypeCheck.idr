@@ -15,8 +15,8 @@ Substitutions : Type
 Substitutions = List (Nat, Ty)
 
 unify : (s : Ty) -> (t : Ty) -> Maybe Substitutions
-unify (Var s) t = Just [(s, t)]
 unify t (Var s) = Just [(s, t)]
+unify (Var s) t = Just [(s, t)]
 unify (Func a b) (Func x y) = do ax <- unify a x
                                  by <- unify b y
                                  pure (ax ++ by)
@@ -51,17 +51,18 @@ uniqueVars base focus = incVars (maxVar base + 1) focus
 partial
 export
 inferType : Expr -> Maybe Ty
-inferType (Compose a b) = do A <- inferType a
-                             case A of
-                               Func s r => do (Func a b) <- inferType b
-                                                | Nothing
-                                              let (Func r' t) = uniqueVars (Func s r) (Func a b)
-                                              substs <- unify r r'
-                                              Just $ Func (substitute substs s) (substitute substs t)
-                               StackBottomTy => do (Func r t) <- inferType b
-                                                     | Nothing
-                                                   substs <- unify StackBottomTy r
-                                                   Just $ Func StackBottomTy (substitute substs t)
+inferType (Compose a b) = case inferType a of
+                            Just (Func s r) => do (Func a b) <- inferType b
+                                                    | Nothing
+                                                  let (Func r' t) = uniqueVars (Func s r) (Func a b)
+                                                  substs <- unify r r'
+                                                  Just $ Func (substitute substs s) (substitute substs t)
+                            Just StackBottomTy => do (Func r t) <- inferType b
+                                                       | Nothing
+                                                     substs <- unify StackBottomTy r
+                                                     Just $ Func StackBottomTy (substitute substs t)
+                            Just (Var n) => Nothing
+                            Just (Product a b) => Nothing
 inferType (Quote a) = do A <- inferType a
                          pure $ Func (Var Z) (Product (Var Z) (incVars 1 A))
 inferType (Function x {t}) = Just $ t
