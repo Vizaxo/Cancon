@@ -54,7 +54,7 @@ inferType (Compose a b) = do (Func s r) <- inferType a
                              substs <- unify r r'
                              Just $ Func (substitute substs s) (substitute substs t)
 inferType (Quote a) = do A <- inferType a
-                         pure $ Func (Var Z) (incVars 1 A)
+                         pure $ Func (Var Z) (Product (Var Z) (incVars 1 A))
 inferType (Function x {t}) = Just $ t
 
 partial
