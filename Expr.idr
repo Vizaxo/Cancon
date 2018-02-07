@@ -16,5 +16,14 @@ mutual
     Quote : (a : Expr) -> Expr
     Function : Prim t -> Expr
 
+drop : Expr
+drop = Function Drop
+
+dup : Expr
+dup = Function Dup
+
+apply : Expr
+apply = Function Apply
+
 id : Expr
-id = (Compose (Function (Literal (Function Drop) (Func (Product (Var 0) (Var 1)) (Var 0)))) (Function Drop))
+id = (Compose (Quote drop) drop)
