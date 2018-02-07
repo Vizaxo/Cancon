@@ -1,25 +1,9 @@
-module Cancon
+module TypeCheck
 
-data Ty : Type where
-  Func : (a : Ty) -> (b : Ty) -> Ty
-  Var : (s : Nat) -> Ty
-  Product : (a : Ty) -> (b : Ty) -> Ty
+import Expr
+import Types
 
-mutual
-  data Prim : Ty -> Type where
-    Drop : Prim (Func (Product (Var 0) (Var 1)) (Var 0))
-    Dup : Prim (Func (Product (Var 0) (Var 1)) (Product (Product (Var 0) (Var 1)) (Var 1)))
-    Apply : Prim (Func (Product (Var 0) (Func (Var 0) (Var 1))) (Var 1))
-    Literal : (x : Expr) -> (a : Ty) -> Prim (Func (Var 0) (Product (Var 0) a))
-
-  data Expr : Type where
-    Compose : (a : Expr) -> (b : Expr) -> Expr
-    Quote : (a : Expr) -> Expr
-    Function : Prim t -> Expr
-
-data Stack : Type where
-  Empty : Stack
-  Push : (x : Expr) -> Stack -> Stack
+%default total
 
 incVars : (n : Nat) -> Ty -> Ty
 incVars n (Func a b) = Func (incVars n a) (incVars n b)
@@ -59,6 +43,8 @@ maxVar x = maxVar' x 0
 uniqueVars : (base : Ty) -> (focus : Ty) -> Ty
 uniqueVars base focus = incVars (maxVar base + 1) focus
 
+partial
+export
 inferType : Expr -> Maybe Ty
 inferType (Compose a b) = do (Func s r) <- inferType a
                                    | Nothing
@@ -71,34 +57,9 @@ inferType (Quote a) = do A <- inferType a
                          pure $ Func (Var Z) (incVars 1 A)
 inferType (Function x {t}) = Just $ t
 
+partial
+export
 checkType : Expr -> Bool
 checkType e = case inferType e of
                    Nothing => False
                    Just x => True
-
-stackToExpr : Stack -> Maybe Expr
-stackToExpr Empty = Nothing
-stackToExpr (Push x Empty) = Just $ x
-stackToExpr (Push x s) = do stack <- stackToExpr s
-                            Just $ Compose x stack
-
-mutual
-  evalFun : Stack -> Prim t -> Maybe Stack
-  evalFun Empty Drop = Nothing
-  evalFun (Push x s) Drop = Just s
-  evalFun Empty Dup = Nothing
-  evalFun (Push x s) Dup = Just $ Push x $ Push x s
-  evalFun s (Literal x _) = Just $ Push x s
-  evalFun (Push y s) Apply = eval s y
-
-  eval : Stack -> Expr -> Maybe Stack
-  eval s (Compose a b) = do s' <- eval s a
-                            eval s' b
-  eval s (Quote a) = Just $ Push a s
-  eval s (Function t) = evalFun s t
-
-checkEval : Stack -> Expr -> Maybe Stack
-checkEval s e = do stack <- stackToExpr s
-                   if checkType (Compose stack e)
-                     then eval s e
-                     else Nothing
