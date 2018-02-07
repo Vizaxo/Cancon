@@ -9,6 +9,7 @@ mutual
     Drop : Prim (Func (Product (Var 0) (Var 1)) (Var 0))
     Dup : Prim (Func (Product (Var 0) (Var 1)) (Product (Product (Var 0) (Var 1)) (Var 1)))
     Apply : Prim (Func (Product (Var 0) (Func (Var 0) (Var 1))) (Var 1))
+    StackBottom : Prim StackBottomTy
     Literal : (x : Expr) -> (a : Ty) -> Prim (Func (Var 0) (Product (Var 0) a))
 
   data Expr : Type where

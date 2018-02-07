@@ -10,9 +10,8 @@ data Stack : Type where
 
 export
 stackToExpr : Stack -> Expr
-stackToExpr Empty = id
-stackToExpr (Push x Empty) = x
-stackToExpr (Push x s) = Compose x (stackToExpr s)
+stackToExpr Empty = Function StackBottom
+stackToExpr (Push x s) = Compose (stackToExpr s) x
 
 mutual
   evalFun : Stack -> Prim t -> Maybe Stack
