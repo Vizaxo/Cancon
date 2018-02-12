@@ -8,26 +8,28 @@ import Lightyear.Char
 import Lightyear.Strings
 import Data.SortedMap
 
-public export
-Env : Type
-Env = SortedMap Identifier Function
+mutual
+  public export
+  data Quotation = Quote Expression
+
+  public export
+  Expression : Type
+  Expression = List (Either Identifier Quotation)
 
 public export
 Program : Type
-Program = List Identifier
+Program = List(Either Identifier Quotation)
 
-identifier : Parser String
+identifier : Parser Identifier
 identifier = map pack (some letter)
 
-infixr 4 <$
-(<$) : Applicative f => a -> f b -> f a
-(<$) a b = pure a <* b
+mutual
+  quotation : Parser Quotation
+  quotation = Quote <$> between (char '[') (many space *> char ']') (commitTo composition)
 
-emptyProgram : Parser Program
-emptyProgram = [] <$ many space
-
-composition : Parser Program
-composition = many (many space *> identifier)
+  --TODO: nested quotations
+  composition : Parser Expression
+  composition = many (many space *> (Left <$> identifier) <|>| (Right <$> quotation) <* many space)
 
 export
 program : Parser Program
