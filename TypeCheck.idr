@@ -65,7 +65,8 @@ inferType (Compose a b) = case inferType a of
                             Just (Product a b) => Nothing
 inferType (Quote a) = do A <- inferType a
                          pure $ Func (Var Z) (Product (Var Z) (incVars 1 A))
-inferType (Function x {t}) = Just $ t
+inferType (Func (Custom e)) = inferType e
+inferType (Func (Primitive e t)) = Just t
 
 partial
 export

@@ -4,6 +4,7 @@ import Expr
 import Eval
 import TypeCheck
 import Types
+import Primitives
 
 export
 checkAndEval : Stack -> Expr -> Either String Stack
@@ -15,7 +16,7 @@ checkAndEval s e = if checkType (Compose (stackToExpr s) e)
 
 export
 composeProgram : List Expr -> Expr
-composeProgram [] = id
+composeProgram [] = Func id
 composeProgram (x :: xs) = (Compose x (composeProgram xs))
 
 export
