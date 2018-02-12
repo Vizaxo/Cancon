@@ -1,0 +1,4 @@
+package cancon
+
+modules = Interpreter, Examples
+opts = "-p lightyear -p contrib"
