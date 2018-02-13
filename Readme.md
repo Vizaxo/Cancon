@@ -6,9 +6,9 @@ Cancon is a very simple statically-typed concatenative language with type infere
 
 ### Concatenative Programming
 
-This is a concatenative language, which means that the programming is done not by applying functions to arguments (as is the case in most lanugages), but by composing functions together. Composing functions just means that they are applied sequentially one after another: `f composed with g` means  `f (g x)` (in Haskell-style notation) or `f(g(x))` in maths- or C-style notation. In concatenative programming, `g f` usually means `f composed with g`, so that the functions are written in the order they are called (and so data flows from left-to-right).
+This is a concatenative language, which means that the programming is done not by applying functions to arguments (as is the case in most languages), but by composing functions together. Composing functions just means that they are applied sequentially one after another: `f composed with g` means  `f (g x)` (in Haskell-style notation) or `f(g(x))` in maths- or C-style notation. In concatenative programming, `g f` usually means `f composed with g`, so that the functions are written in the order they are called (and so data flows from left-to-right).
 
-An alternative but equivalent way of thinking about this is that the functions are excuted sequentially, taking their arguments from a stack and returning their arguments to the stack.
+An alternative but equivalent way of thinking about this is that the functions are executed sequentially, taking their arguments from a stack and returning their arguments to the stack.
 
 A much more comprehensive introduction to concatenative programming can be found in [Why Concatenative Programming Matters](https://evincarofautumn.blogspot.ch/2012/02/why-concatenative-programming-matters.html) by Jon Purdy.
 
@@ -28,6 +28,37 @@ So an addition function would have the type `S x Int x Int -> S x Int`, which me
 
 A literal value is represented by a function which pushes the value onto the stack. So the literal `2` would have the type `S -> S x Int`: it takes any stack, and returns that same stack with an integer on top.
 
+### Syntax
+
+The syntax is very simple. Identifiers are just strings of letters, and identifiers separated by a space will be composed together.
+
+```
+drop drop dup
+-- will drop the top 2 values of the stack, then duplicate the one that remains on the top of the new stack
+```
+
+To quote an expression, just wrap it in square brackets.
+
+```
+[id]
+-- pushes id (the identity function) onto the top of the stack
+```
+
+Identifiers can also be concatenated inside quotations.
+
+```
+[swap drop apply]
+-- pushes 'swap drop apply' onto the stack
+```
+
+
+And quotations act just like other functions, so they can be composed like normal.
+
+```
+[apply] drop
+-- pushes apply onto the stack, then drops it (returning the same stack, so this is the same as the identity function id
+```
+
 ## Examples
 
-The file Examples.idr contains some example programs. `run` type-checks a program (giving an unhelpful error if type checking fails) and then, if it is well-typed, runs it with an empty initial stack. The final state of the stack will be returned.
+The file Examples.idr contains some example programs. `interpret` parses and type-checks a program (giving an unhelpful error if type checking fails) and then, if it is well-typed, runs it with an empty initial stack. The final state of the stack will be returned.
