@@ -3,9 +3,8 @@ module Eval where
 import Expr
 import Ty
 
-eval :: Stack -> Expr -> Maybe Stack
-eval s (Compose a b) = do s' <- eval s a
-                          eval s' b
-eval s (Quote a) = Just (a:s)
-eval s (Primitive f t) = f s
-eval s (Function e) = eval s e
+eval :: Expr -> Stack -> Maybe Stack
+eval (Compose a b)   s = eval a s >>= eval b
+eval (Quote a)       s = Just (a:s)
+eval (Primitive f t) s = f s
+eval (Function e)    s = eval e s

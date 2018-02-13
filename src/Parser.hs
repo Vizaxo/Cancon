@@ -1,19 +1,19 @@
 module Parser where
 
-import Expr
-import Ty
-import Primitives
 import Text.Parsec
 import Text.Parsec.String
 import Text.Parsec.Char
 import Control.Applicative (some)
 
-data Quotation = Q Expression
+type Identifier = String
+
+data Expression = EIdentifier Identifier
+                | EQuote Quotation
+                deriving (Show)
+type Composition = [Expression]
+data Quotation = Q Composition
                deriving (Show)
-
-type Expression = [(Either Identifier Quotation)]
-
-type Program = [(Either Identifier Quotation)]
+type Program = Composition
 
 identifier :: Parser Identifier
 identifier = some letter
@@ -21,8 +21,10 @@ identifier = some letter
 quotation :: Parser Quotation
 quotation = Q <$> between (char '[') (char ']') composition
 
-composition :: Parser Expression
-composition = many (many space *> (try (Right <$> quotation) <|> (Left <$> identifier)) <* many space)
+composition :: Parser Composition
+composition = many (many space *>
+                    ((EQuote <$> quotation) <|> (EIdentifier <$> identifier))
+                    <* many space)
 
 program :: Parser Program
 program = composition

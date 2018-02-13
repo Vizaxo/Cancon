@@ -13,16 +13,17 @@ import Data.Map hiding (drop)
 
 type Env = Map Identifier Expr
 
+toExprSingle :: Env -> Expression -> Either String Expr
+toExprSingle _     (EQuote (Q [])) = Right id'
+toExprSingle gamma (EQuote (Q x))  = toExpr gamma x >>= Right . Quote
+toExprSingle gamma (EIdentifier x) = case lookup x gamma of
+                                      Just f  -> Right $ Function f
+                                      Nothing -> Left $ "Undefined identifier " ++ x ++ "."
+
 toExpr :: Env -> Program -> Either String Expr
-toExpr gamma [(Left x)] = case lookup x gamma of
-                            Just f -> Right $ Function f
-                            Nothing -> Left $ "Undefined identifier " ++ x
-toExpr gamma [(Right (Q x))] = toExpr gamma x >>= Right . Quote
-toExpr gamma ((Left x):xs) = case lookup x gamma of
-                               Just f -> toExpr gamma xs >>= Right . Compose (Function f)
-                               Nothing -> Left $ "Undefined identifier " ++ x
-toExpr gamma ((Right (Q x)):xs) = do x' <- toExpr gamma x
-                                     toExpr gamma xs >>= Right . Compose (Quote x')
+toExpr _     []     = Right id'
+toExpr gamma (x:xs) = do x' <- toExprSingle gamma x
+                         toExpr gamma xs >>= Right . Compose x'
 
 defaultEnv :: Env
 defaultEnv = insert "dup" dup $
@@ -36,22 +37,22 @@ defaultEnv = insert "dup" dup $
 
 parseProgram :: String -> Either String Expr
 parseProgram s = case parse program "" s of
-                   Right x -> toExpr defaultEnv x
+                   Right x    -> toExpr defaultEnv x
                    Left error -> Left $ show error
 
 stackToExpr :: Stack -> Expr
-stackToExpr [] = stackBottom
+stackToExpr []    = stackBottom
 stackToExpr (x:s) = Compose (stackToExpr s) x
 
 checkAndEval :: Stack -> Expr -> Either String Stack
-checkAndEval s e = if checkType (Compose (stackToExpr s) e)
-                     then case eval s e of
-                               Just s -> Right s
-                               Nothing -> Left "Runtime error."
-                     else Left "Type checking failed."
+checkAndEval s e
+  | checkType (Compose (stackToExpr s) e) = case eval e s of
+                                              Just s  -> Right s
+                                              Nothing -> Left "Runtime error."
+  | otherwise = Left "Type checking failed."
 
 composeProgram :: [Expr] -> Expr
-composeProgram [] = id'
+composeProgram []     = id'
 composeProgram (x:xs) = (Compose x (composeProgram xs))
 
 run :: [Expr] -> Either String Stack
