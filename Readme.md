@@ -1,6 +1,6 @@
 # Cancon
 
-Cancon is a very simple statically-typed concatenative language with type inference. This is a simple type checker and interpreter for it, written in Idris.
+Cancon is a very simple statically-typed concatenative language with type inference. This is a simple type checker and interpreter for it, written in Haskell.
 
 ## The Language
 
