@@ -15,6 +15,14 @@ badType :: Either String Stack
 badType = interpret "drop"
 -- => Type checking failed.
 
+badApplyApply :: Either String Stack
+badApplyApply = interpret "[apply] apply"
+-- => Type checking failed.
+
+runApplyId :: Either String Stack
+runApplyId = interpret "[id] apply"
+-- => Stack: Empty
+
 runId :: Either String Stack
 runId = interpret "id"
 -- => Stack: Empty

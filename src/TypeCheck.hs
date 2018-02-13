@@ -15,10 +15,10 @@ unify :: Ty -> Ty -> Maybe Substitutions
 unify t (Var s) = Just [(s, t)]
 unify (Var s) t = Just [(s, t)]
 unify (Func a b) (Func x y) = do ax <- unify a x
-                                 by <- unify b y
+                                 by <- unify (substitute ax b) (substitute ax y)
                                  pure (ax ++ by)
 unify (Product a b) (Product x y) = do ax <- unify a x
-                                       by <- unify b y
+                                       by <- unify (substitute ax b) (substitute ax y)
                                        pure (ax ++ by)
 unify (Product a b) (Func x y) = Nothing
 unify (Func a b) (Product x y) = Nothing
