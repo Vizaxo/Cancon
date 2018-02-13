@@ -1,11 +1,10 @@
 module Parser where
 
+import Expr
 import Text.Parsec
 import Text.Parsec.String
 import Text.Parsec.Char
 import Control.Applicative (some)
-
-type Identifier = String
 
 data Expression = EIdentifier Identifier
                 | EQuote Quotation

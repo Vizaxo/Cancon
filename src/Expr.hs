@@ -2,12 +2,17 @@ module Expr where
 
 import Ty
 import Text.Show.Functions
+import Data.Map
 
 type Stack = [Expr]
 
+type Identifier = String
+
+type Env = Map Identifier Expr
+
 data Expr = Compose Expr Expr
-          | Function Expr
           | Quote Expr
-          | Primitive (Stack -> Maybe Stack) Ty
           deriving (Show)
+          | Primitive (Env -> Stack -> Maybe Stack) Ty
+          | Id Identifier
 

@@ -5,52 +5,52 @@ import Expr
 import Ty
 import Eval
 
-dropEval :: Stack -> Maybe Stack
-dropEval [] = Nothing
-dropEval (x:s) = Just s
+dropEval :: Env -> Stack -> Maybe Stack
+dropEval _ [] = Nothing
+dropEval _ (x:s) = Just s
 
 drop :: Expr
 drop = Primitive dropEval (Func (Product (Var 0) (Var 1)) (Var 0))
 
-dupEval :: Stack -> Maybe Stack
-dupEval [] = Nothing
-dupEval (x:s) = Just (x:x:s)
+dupEval :: Env -> Stack -> Maybe Stack
+dupEval _ [] = Nothing
+dupEval _ (x:s) = Just (x:x:s)
 
 dup :: Expr
 dup = Primitive dupEval (Func (Product (Var 0) (Var 1)) (Product (Product (Var 0) (Var 1)) (Var 1)))
 
-swapEval :: Stack -> Maybe Stack
-swapEval [] = Nothing
-swapEval (x:[]) = Nothing
-swapEval (x:(y:s)) = Just (y:x:s)
+swapEval :: Env -> Stack -> Maybe Stack
+swapEval _ [] = Nothing
+swapEval _ (x:[]) = Nothing
+swapEval _ (x:(y:s)) = Just (y:x:s)
 
 swap :: Expr
 swap = Primitive swapEval (Func (Product (Product (Var 0) (Var 1)) (Var 2)) (Product (Product (Var 0) (Var 2)) (Var 1)))
 
-applyEval :: Stack -> Maybe Stack
-applyEval [] = Nothing
-applyEval (x:s) = eval x s
+applyEval :: Env -> Stack -> Maybe Stack
+applyEval _ [] = Nothing
+applyEval gamma (x:s) = eval gamma x s
 
 apply :: Expr
 apply = Primitive applyEval (Func (Product (Var 0) (Func (Var 0) (Var 1))) (Var 1))
 
-quoteEval :: Stack -> Maybe Stack
-quoteEval [] = Nothing
-quoteEval (x:s) = Just ((Quote x):s)
+quoteEval :: Env -> Stack -> Maybe Stack
+quoteEval _ [] = Nothing
+quoteEval _ (x:s) = Just ((Quote x):s)
 
 primQuote :: Expr
 primQuote = Primitive quoteEval (Func (Product (Var 0) (Var 1)) (Product (Var 0) (Func (Var 2) (Product (Var 2) (Var 1)))))
 
-composeEval :: Stack -> Maybe Stack
-composeEval [] = Nothing
-composeEval (x:[]) = Nothing
-composeEval (x:(y:s)) = Just ((Compose y x):s)
+composeEval :: Env -> Stack -> Maybe Stack
+composeEval _ [] = Nothing
+composeEval _ (x:[]) = Nothing
+composeEval _ (x:(y:s)) = Just ((Compose y x):s)
 
 primCompose :: Expr
 primCompose = Primitive composeEval (Func (Product (Product (Var 0) (Func (Var 1) (Var 2))) (Func (Var 2) (Var 3))) (Product (Var 0) (Func (Var 1) (Var 3))))
 
 stackBottom :: Expr
-stackBottom = Primitive (\_ -> Nothing) StackBottomTy
+stackBottom = Primitive (\_ _-> Nothing) StackBottomTy
 
 id' :: Expr
-id' = Function (Compose (Quote drop) drop)
+id' = Compose (Quote drop) drop
