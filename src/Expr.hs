@@ -24,5 +24,5 @@ showStack xs = "{" ++ output xs ++ "}"
 instance Show Expr where
   show (Compose a b) = show a ++ " " ++ show b
   show (Quote a) = "[" ++ show a ++ "]"
-  show (Primitive _ _) = "<prim_func>"
+  show (Primitive _ t) = "(<prim_func> : " ++ show t ++ ")"
   show (Id x) = x
