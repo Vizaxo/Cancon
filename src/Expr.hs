@@ -15,6 +15,12 @@ data Expr = Compose Expr Expr
           | Primitive (Env -> Stack -> Maybe Stack) Ty
           | Id Identifier
 
+showStack :: Stack -> String
+showStack xs = "{" ++ output xs ++ "}"
+  where output [] = ""
+        output [x] = show x
+        output (x:xs) = output xs ++ ", " ++ show x
+
 instance Show Expr where
   show (Compose a b) = show a ++ " " ++ show b
   show (Quote a) = "[" ++ show a ++ "]"

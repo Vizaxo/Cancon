@@ -37,7 +37,7 @@ parseProgram s = case parse program "" s of
 
 stackToExpr :: Stack -> Expr
 stackToExpr []    = stackBottom
-stackToExpr (x:s) = Compose (stackToExpr s) x
+stackToExpr (x:s) = Compose (stackToExpr s) (Quote x)
 
 checkAndEval :: Stack -> Expr -> Either String Stack
 checkAndEval s e = do inferType defaultEnv (Compose (stackToExpr s) e)
@@ -45,12 +45,19 @@ checkAndEval s e = do inferType defaultEnv (Compose (stackToExpr s) e)
                         Just s  -> Right s
                         Nothing -> Left "Runtime error."
 
-composeProgram :: [Expr] -> Expr
-composeProgram []     = id'
-composeProgram (x:xs) = (Compose x (composeProgram xs))
-
-run :: [Expr] -> Either String Stack
-run xs = checkAndEval [] (composeProgram xs)
+run :: Stack -> String -> Either String Stack
+run s str = parseProgram str >>= checkAndEval s
 
 interpret :: String -> Either String Stack
-interpret s = parseProgram s >>= checkAndEval []
+interpret = run []
+
+runRepl :: Stack -> IO ()
+runRepl s = do str <- getLine
+               case run s str of
+                 Right s' -> do putStrLn $ showStack s'
+                                runRepl s'
+                 Left err -> do putStrLn err
+                                runRepl s
+
+repl :: IO ()
+repl = runRepl []
